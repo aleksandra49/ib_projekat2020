@@ -101,12 +101,12 @@ public class WriteMailClient extends MailClient {
 			JavaUtils.writeBytesToFilename(IV1_FILE, ivParameterSpec1.getIV());
 			JavaUtils.writeBytesToFilename(IV2_FILE, ivParameterSpec2.getIV());
 			
-			//izbacuje gresku
-			//MimeMessage mimeMessage = MailHelper.createMimeMessage(reciever, ciphersubjectStr, mailBody);
-        	//MailWritter.sendMessage(service, "me", mimeMessage);
-			//izbacuje gresku
-        	MimeMessage mimeMessage = MailHelper.createMimeMessage(reciever, ciphersubjectStr, ciphertextStr);
+			//izbacuje gresku izgleda vise ne
+			MimeMessage mimeMessage = MailHelper.createMimeMessage(reciever, ciphersubjectStr, mailBody);
         	MailWritter.sendMessage(service, "me", mimeMessage);
+			//izbacuje gresku
+        	//MimeMessage mimeMessage = MailHelper.createMimeMessage(reciever, ciphersubjectStr, ciphertextStr);
+        	//MailWritter.sendMessage(service, "me", mimeMessage);
         	
         }catch (Exception e) {
         	e.printStackTrace();

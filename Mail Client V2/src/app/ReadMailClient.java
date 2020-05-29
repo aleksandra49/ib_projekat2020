@@ -97,10 +97,10 @@ public class ReadMailClient extends MailClient {
 		byte[] encSecretkey = mb.getEncKeyBytes();
 		String encBody = mb.getEncMessage();
 		
-		//keystore gde se nalzi
+		//keystore gde se nalazi
 		KeyStore ks = KeyStore.getInstance("JKS");
 		ks.load(new FileInputStream("./data/userbKS.jks"), "keystore456".toCharArray());
-		PrivateKey ubpk = (PrivateKey) ks.getKey("userb", "keystore456".toCharArray());
+		PrivateKey ubpk = (PrivateKey) ks.getKey("userb", "userb456".toCharArray());
 		
 		Cipher rsaCipherDec = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 		rsaCipherDec.init(Cipher.DECRYPT_MODE, ubpk);
