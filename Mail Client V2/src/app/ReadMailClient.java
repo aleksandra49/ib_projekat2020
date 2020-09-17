@@ -108,6 +108,7 @@ public class ReadMailClient extends MailClient {
 		byte[] decryptedKey = rsaCipherDec.doFinal(encSecretkey);
 		
 		SecretKey secretKey = new SecretKeySpec(decryptedKey, "DESede");
+		//SecretKey secretKey = new SecretKeySpec(decryptedKey, "AES");
 		System.out.println("Dekriptovani kljuc: " + secretKey.hashCode());
 		
 		//inicijalizacija za dekriptovanje
