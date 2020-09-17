@@ -87,7 +87,8 @@ public class ReadMailClient extends MailClient {
 		MimeMessage chosenMessage = mimeMessages.get(answer);
 	    
         //TODO: Decrypt a message and decompress it. The private key is stored in a file.
-		Cipher aesCipherDec = Cipher.getInstance("AES/CBC/PKCS5Padding");
+		Cipher des3CipherDec = Cipher.getInstance("DESede/CBC/PKCS5Padding");
+		//Cipher aesCipherDec = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		//SecretKey secretKey = new SecretKeySpec(JavaUtils.getBytesFromFile(KEY_FILE), "AES");
 		
 		//poruka koja je enkriptivana,tj covek je ne moze procitati 
@@ -106,11 +107,11 @@ public class ReadMailClient extends MailClient {
 		rsaCipherDec.init(Cipher.DECRYPT_MODE, ubpk);
 		byte[] decryptedKey = rsaCipherDec.doFinal(encSecretkey);
 		
-		SecretKey secretKey = new SecretKeySpec(decryptedKey, "AES");
+		SecretKey secretKey = new SecretKeySpec(decryptedKey, "DESede");
 		System.out.println("Dekriptovani kljuc: " + secretKey.hashCode());
 		
 		//inicijalizacija za dekriptovanje
-		aesCipherDec.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec1);
+		des3CipherDec.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec1);
 		
 		/*byte[] iv1 = JavaUtils.getBytesFromFile(IV1_FILE);
 		IvParameterSpec ivParameterSpec1 = new IvParameterSpec(iv1);
@@ -119,7 +120,7 @@ public class ReadMailClient extends MailClient {
 		/*String str = MailHelper.getText(chosenMessage);
 		byte[] bodyEnc = Base64.decode(str);*/
 		
-		String receivedBodyTxt = new String(aesCipherDec.doFinal(Base64.decode(encBody)));
+		String receivedBodyTxt = new String(des3CipherDec.doFinal(Base64.decode(encBody)));
 		String decompressedBodyText = GzipUtil.decompress(Base64.decode(receivedBodyTxt));
 		System.out.println("Body text: " + decompressedBodyText);
 		
@@ -127,10 +128,10 @@ public class ReadMailClient extends MailClient {
 		/*byte[] iv2 = JavaUtils.getBytesFromFile(IV2_FILE);
 		IvParameterSpec ivParameterSpec2 = new IvParameterSpec(iv2);*/
 		//inicijalizacija za dekriptovanje
-		aesCipherDec.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec2);
+		des3CipherDec.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec2);
 		
 		//dekompresovanje i dekriptovanje subject-a
-		String decryptedSubjectTxt = new String(aesCipherDec.doFinal(Base64.decode(chosenMessage.getSubject())));
+		String decryptedSubjectTxt = new String(des3CipherDec.doFinal(Base64.decode(chosenMessage.getSubject())));
 		String decompressedSubjectTxt = GzipUtil.decompress(Base64.decode(decryptedSubjectTxt));
 		System.out.println("Subject text: " + new String(decompressedSubjectTxt));
 	}
