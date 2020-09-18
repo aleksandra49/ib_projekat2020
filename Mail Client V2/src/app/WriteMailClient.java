@@ -26,7 +26,9 @@ import support.MailHelper;
 import support.MailWritter;
 
 public class WriteMailClient extends MailClient {
-
+	
+	
+	
 	private static final String KEY_FILE = "./data/session.key";
 	private static final String IV1_FILE = "./data/iv1.bin";
 	private static final String IV2_FILE = "./data/iv2.bin";
@@ -53,28 +55,26 @@ public class WriteMailClient extends MailClient {
             String compressedBody = Base64.encodeToString(GzipUtil.compress(body));
             
             //Key generation
-            //KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-            KeyGenerator keyGen = KeyGenerator.getInstance("DESede"); 
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES"); 
 			SecretKey secretKey = keyGen.generateKey();
-			//Cipher aesCipherEnc = Cipher.getInstance("AES/CBC/PKCS5Padding");
-			Cipher des3CipherEnc = Cipher.getInstance("DESede/CBC/PKCS5Padding");
+			Cipher aesCipherEnc = Cipher.getInstance("AES/CBC/PKCS5Padding");
 			
 			//inicijalizacija za sifrovanje 
 			IvParameterSpec ivParameterSpec1 = IVHelper.createIV();
-			des3CipherEnc.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec1);
+			aesCipherEnc.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec1);
 			
 			
 			//sifrovanje
-			byte[] ciphertext = des3CipherEnc.doFinal(compressedBody.getBytes());
+			byte[] ciphertext = aesCipherEnc.doFinal(compressedBody.getBytes());
 			String ciphertextStr = Base64.encodeToString(ciphertext);
 			System.out.println("Kriptovan tekst: " + ciphertextStr);
 			
 			
 			//inicijalizacija za sifrovanje 
 			IvParameterSpec ivParameterSpec2 = IVHelper.createIV();
-			des3CipherEnc.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec2);
+			aesCipherEnc.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec2);
 			
-			byte[] ciphersubject = des3CipherEnc.doFinal(compressedSubject.getBytes());
+			byte[] ciphersubject = aesCipherEnc.doFinal(compressedSubject.getBytes());
 			String ciphersubjectStr = Base64.encodeToString(ciphersubject);
 			System.out.println("Kriptovan subject: " + ciphersubjectStr);
 			
@@ -114,4 +114,111 @@ public class WriteMailClient extends MailClient {
         	e.printStackTrace();
 		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//projekat koji sam menjala i onda sam napravila greske, gore vracen projekat kao s akontrolne tacke
+
+	
+	
+
+	/*private static final String KEY_FILE = "./data/session.key";
+	private static final String IV1_FILE = "./data/iv1.bin";
+	private static final String IV2_FILE = "./data/iv2.bin";
+	
+	public static void main(String[] args) {
+		
+        try {
+        	Gmail service = getGmailService();
+            
+        	System.out.println("Insert a reciever:");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            String reciever = reader.readLine();
+        	
+            System.out.println("Insert a subject:");
+            String subject = reader.readLine();
+            
+            
+            System.out.println("Insert body:");
+            String body = reader.readLine();
+            
+            
+            //Compression
+            String compressedSubject = Base64.encodeToString(GzipUtil.compress(subject));
+            String compressedBody = Base64.encodeToString(GzipUtil.compress(body));
+            
+            //Key generation
+            //KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+            KeyGenerator keyGen = KeyGenerator.getInstance("DESede"); 
+			SecretKey secretKey = keyGen.generateKey();
+			Cipher aesCipherEnc = Cipher.getInstance("AES/CBC/PKCS5Padding");
+			//Cipher des3CipherEnc = Cipher.getInstance("DESede/CBC/PKCS5Padding");
+			
+			//inicijalizacija za sifrovanje 
+			IvParameterSpec ivParameterSpec1 = IVHelper.createIV();
+			aesCipherEnc.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec1);
+			//des3CipherEnc.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec1);
+			
+			
+			//sifrovanje
+			byte[] ciphertext = aesCipherEnc.doFinal(compressedBody.getBytes());
+			//byte[] ciphertext = des3CipherEnc.doFinal(compressedBody.getBytes());
+			String ciphertextStr = Base64.encodeToString(ciphertext);
+			System.out.println("Kriptovan tekst: " + ciphertextStr);
+			
+			
+			//inicijalizacija za sifrovanje 
+			IvParameterSpec ivParameterSpec2 = IVHelper.createIV();
+			aesCipherEnc.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec2);
+			//des3CipherEnc.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec2);
+			
+			byte[] ciphersubject = aesCipherEnc.doFinal(compressedSubject.getBytes());
+			//byte[] ciphersubject = des3CipherEnc.doFinal(compressedSubject.getBytes());
+			String ciphersubjectStr = Base64.encodeToString(ciphersubject);
+			System.out.println("Kriptovan subject: " + ciphersubjectStr);
+			
+			//keystore gde se nalaze podaci usera,daje se putanja do tog falja da ga ucita
+			KeyStore ks = KeyStore.getInstance("JKS");
+			ks.load(new FileInputStream("./data/useraKS.jks"), "keystore123".toCharArray());
+			Certificate ubc = ks.getCertificate("userb");
+			PublicKey ubpk = ubc.getPublicKey();
+			
+			//inicijalizacija za sifrovanje
+			Cipher rsaCipherEnc = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+			rsaCipherEnc.init(Cipher.ENCRYPT_MODE, ubpk);
+			
+			//sifrovanje
+			byte[] cipherkey = rsaCipherEnc.doFinal(secretKey.getEncoded());
+			String cipherkeyStr = Base64.encodeToString(cipherkey);
+			System.out.println("Kljuc: " + secretKey.hashCode());
+			System.out.println("Kriptovani kljuc: " + cipherkeyStr);
+			
+			MailBody mb = new MailBody(ciphertextStr, ivParameterSpec1.getIV(), ivParameterSpec2.getIV(), cipherkeyStr);
+			String mailBody = mb.toCSV();
+			System.out.println("Telo email-a: " + mailBody);
+			
+			//snimaju se bajtovi kljuca i IV.
+			JavaUtils.writeBytesToFilename(KEY_FILE, secretKey.getEncoded());
+			JavaUtils.writeBytesToFilename(IV1_FILE, ivParameterSpec1.getIV());
+			JavaUtils.writeBytesToFilename(IV2_FILE, ivParameterSpec2.getIV());
+			
+			//izbacuje gresku izgleda vise ne
+			MimeMessage mimeMessage = MailHelper.createMimeMessage(reciever, ciphersubjectStr, mailBody);
+        	MailWritter.sendMessage(service, "me", mimeMessage);
+			//izbacuje gresku
+        	//MimeMessage mimeMessage = MailHelper.createMimeMessage(reciever, ciphersubjectStr, ciphertextStr);
+        	//MailWritter.sendMessage(service, "me", mimeMessage);
+        	
+        }catch (Exception e) {
+        	e.printStackTrace();
+		}
+	}*/
 }
